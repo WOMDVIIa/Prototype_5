@@ -8,6 +8,7 @@ using TMPro;
 public class GameManager : MonoBehaviour
 {
     public bool isGameActive;
+    public int lives = 0;
     
     public List<GameObject> targets;
     public TextMeshProUGUI scoreText;
@@ -15,6 +16,7 @@ public class GameManager : MonoBehaviour
     public Button restartButton;
     public GameObject titleScreen;
 
+    [SerializeField] TextMeshProUGUI livesText;
     private float spawnRate = 1.0f;
     private int score = 0;
 
@@ -36,6 +38,12 @@ public class GameManager : MonoBehaviour
         scoreText.text = "Score: " + score;
     }
 
+    public void UpdateLives(int currentLives)
+    {
+        lives = currentLives;
+        livesText.text = "Lives: " + lives;
+    }
+
     IEnumerator SpawnTarget()
     {
         while (isGameActive)
@@ -46,11 +54,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void GameOver()
+    public void LoseLife()
     {
-        gameOverText.gameObject.SetActive(true);
-        restartButton.gameObject.SetActive(true);
-        isGameActive = false;
+        lives--;
+        UpdateLives(lives);
+        if (lives <= 0)
+        {
+            gameOverText.gameObject.SetActive(true);
+            restartButton.gameObject.SetActive(true);
+            isGameActive = false;
+        }
     }
 
     public void RestartGame()
@@ -66,6 +79,7 @@ public class GameManager : MonoBehaviour
         StartCoroutine(SpawnTarget());
 
         UpdateScore(0);
+        UpdateLives(3);
         titleScreen.gameObject.SetActive(false);
     }
 }
