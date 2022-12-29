@@ -7,7 +7,8 @@ using TMPro;
 
 public class GameManager : MonoBehaviour
 {
-    public bool isGameActive;
+    public bool isGameActive = false;
+    public bool isGamePausable;
     public int lives = 0;
     
     public List<GameObject> targets;
@@ -15,8 +16,11 @@ public class GameManager : MonoBehaviour
     public TextMeshProUGUI gameOverText;
     public Button restartButton;
     public GameObject titleScreen;
+    public GameObject trail;
 
     [SerializeField] TextMeshProUGUI livesText;
+    [SerializeField] GameObject pauseScreen;
+    [SerializeField] Camera cam;
     private float spawnRate = 1.0f;
     private int score = 0;
 
@@ -29,8 +33,21 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        PauseOrUnpause();
+        CreateTrail();
     }
+
+    private void CreateTrail()
+    {
+        if (Input.GetKeyDown(KeyCode.Mouse0) && isGameActive)
+        {
+            Vector2 mousePos = new Vector2();
+            mousePos.x = Input.mousePosition.x;
+            mousePos.y = Input.mousePosition.y;
+            Instantiate(trail, cam.ScreenToWorldPoint(new Vector3(mousePos.x, mousePos.y, 10)), trail.transform.rotation);
+        }
+    }
+
 
     public void UpdateScore(int scoreToAdd)
     {
@@ -63,6 +80,7 @@ public class GameManager : MonoBehaviour
             gameOverText.gameObject.SetActive(true);
             restartButton.gameObject.SetActive(true);
             isGameActive = false;
+            isGamePausable = false;
         }
     }
 
@@ -74,6 +92,7 @@ public class GameManager : MonoBehaviour
     public void StartGame(int difficulty)
     {
         isGameActive = true;
+        isGamePausable = true;
         spawnRate /= difficulty;
 
         StartCoroutine(SpawnTarget());
@@ -81,5 +100,24 @@ public class GameManager : MonoBehaviour
         UpdateScore(0);
         UpdateLives(3);
         titleScreen.gameObject.SetActive(false);
+    }
+
+    private void PauseOrUnpause()
+    {
+        if (Input.GetKeyDown(KeyCode.Space) && isGamePausable)
+        {
+            if (Time.timeScale == 1)
+            {
+                Time.timeScale = 0;
+                isGameActive = false;
+                pauseScreen.gameObject.SetActive(true);
+            }
+            else
+            {
+                Time.timeScale = 1;
+                isGameActive = true;
+                pauseScreen.gameObject.SetActive(false);
+            }
+        }
     }
 }
